@@ -1,34 +1,36 @@
 from matplotlib.patches import Rectangle, Polygon
 from matplotlib import cm
+import numpy as np
 
 
-def get_maximum_minimum(napryazh, kind):
+def get_maximum_minimum(elements):
     q = []
-    for i in list(napryazh.values()):
-        q.append(i[kind][0])
-    return max(q), min(q)
+    for i in elements:
+        q.append(i.napr)
+    q = np.array(q)
+    max_ = [max(q[:, i].tolist()) for i in range(3)]
+    min_ = [min(q[:, i].tolist()) for i in range(3)]
+    return max_, min_
 
 
-def show_color_mesh(elements: dict, nodes: dict, ax, color_elements):
-    for key, i in elements.items():
+def show_color_mesh(elems, ax, k):
+    for elem in elems:
         # print(color_elements[key])
         ax.add_patch(Polygon(
-            [nodes[x] for x in i.ids],
-            facecolor=color_elements[key]
+            elem.crdnt(),
+            facecolor=elem.color[k]
         ))
 
 
-def show_mesh(elements: dict, nodes: dict, ax):
-    for i in elements.values():
-        ax.add_patch(Polygon(
-            [nodes[x] for x in i.ids],
-            facecolor='yellow', edgecolor='violet'
+def show_mesh(elements, ax):
+    for elem in elements:
+        ax.add_patch(Polygon(elem.crdnt(),
+                        facecolor='lime', edgecolor='blue'
         ))
 
 
-def create_colored_elements(napr, kind):
-    maximum, minimum = get_maximum_minimum(napr, kind)
-    colored_elems = {}
-    for key, value in napr.items():
-        colored_elems[key] = cm.get_cmap('hot')((value[kind][0] - minimum) / (maximum - minimum)) #heatMapColorforValue(value[kind][0], maximum, minimum)
-    return colored_elems
+def coloring_elements(elems):
+    maximum, minimum = get_maximum_minimum(elems)
+    for elem in elems:
+        elem.color = [cm.get_cmap('hot')((elem.napr[i][0] - minimum[i][0]) / (maximum[i][0] - minimum[i][0])) for i in range(3)]
+        #heatMapColorforValue(value[kind][0], maximum, minimum)
